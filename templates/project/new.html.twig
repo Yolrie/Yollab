@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un projet{% endblock %}
+
+{% block body %}
+    <div style="max-width: 600px; margin: 40px auto; font-family: sans-serif;">
+        <h1>Créer un projet</h1>
+
+        {# Barre de progression #}
+        <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+            {% for step in flow.steps %}
+                <div style="
+                    flex: 1;
+                    padding: 8px;
+                    text-align: center;
+                    background: {{ flow.currentStepName == step.name ? '#4a90d9' : '#e0e0e0' }};
+                    color: {{ flow.currentStepName == step.name ? 'white' : '#666' }};
+                    border-radius: 4px;
+                    font-size: 14px;
+                    ">
+                    {{ step.options.label ?? step.name }}
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Messages flash #}
+        {% for message in app.flashes('success') %}
+            <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {# Formulaire de l'étape en cours #}
+        {{ form_start(step_form) }}
+        {{ form_widget(step_form) }}
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            {{ form_widget(step_form._flow_previous, {'attr': {'style': 'padding: 10px 20px; cursor: pointer;'}}) }}
+            {{ form_widget(step_form._flow_next, {'attr': {'style': 'padding: 10px 20px; cursor: pointer; background: #4a90d9; color: white; border: none; border-radius: 4px;'}}) }}
+        </div>
+        {{ form_end(step_form) }}
+    </div>
+{% endblock %}
