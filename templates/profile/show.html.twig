@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ profile.username }} — Yollab{% endblock %}
+
+{% block body %}
+<div class="profile-page">
+
+    <div class="profile-header">
+        <div class="profile-avatar">{{ profile.username|first|upper }}</div>
+        <div>
+            <h1>{{ profile.username }}</h1>
+            <p class="muted">Membre depuis {{ profile.createdAt|date('d/m/Y') }}</p>
+        </div>
+        <div class="profile-score">
+            <span class="rep-score">{{ profile.reputationScore }}</span>
+            <span class="rep-label">points de réputation</span>
+        </div>
+    </div>
+
+    {# Step 9 : résumé réputation #}
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-number">{{ profile.snippets|length }}</div>
+            <div class="stat-label">Snippets soumis</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ profile.reviews|length }}</div>
+            <div class="stat-label">Reviews données</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ profile.lineComments|length }}</div>
+            <div class="stat-label">Commentaires inline</div>
+        </div>
+    </div>
+
+    {# Snippets soumis #}
+    <div class="section-card">
+        <h2>Snippets</h2>
+        {% if profile.snippets is empty %}
+            <p class="muted">Aucun snippet soumis.</p>
+        {% else %}
+            <div class="snippet-list-compact">
+                {% for snippet in profile.snippets %}
+                    <div class="snippet-compact-row">
+                        <span class="lang-badge lang-{{ snippet.language }}">{{ snippet.language }}</span>
+                        <a href="{{ path('app_snippet_show', {id: snippet.id}) }}">{{ snippet.title }}</a>
+                        <span class="muted">· {{ snippet.reviews|length }} review(s) · {{ snippet.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    {# Reviews données #}
+    <div class="section-card">
+        <h2>Reviews données</h2>
+        {% if profile.reviews is empty %}
+            <p class="muted">Aucune review donnée.</p>
+        {% else %}
+            <div class="snippet-list-compact">
+                {% for review in profile.reviews %}
+                    <div class="snippet-compact-row">
+                        <span class="verdict verdict-{{ review.status }}">
+                            {% if review.status == 'approved' %}✅{% else %}🔧{% endif %}
+                        </span>
+                        <a href="{{ path('app_snippet_show', {id: review.snippet.id}) }}">{{ review.snippet.title }}</a>
+                        <span class="muted">· {{ review.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

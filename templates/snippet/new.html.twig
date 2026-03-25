@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau snippet — Yollab{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <h1>Soumettre un snippet</h1>
+</div>
+
+<div class="form-card">
+    {{ form_start(form) }}
+        {{ form_row(form.title) }}
+        {{ form_row(form.language) }}
+        {{ form_row(form.tagsInput) }}
+        <div class="form-group">
+            {{ form_label(form.code) }}
+            {{ form_widget(form.code, {attr: {id: 'code-editor'}}) }}
+        </div>
+        <button type="submit" class="btn btn-primary">Soumettre</button>
+        <a href="{{ path('app_snippet_list') }}" class="btn btn-secondary">Annuler</a>
+    {{ form_end(form) }}
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+    // Aperçu en temps réel (optionnel, non bloquant)
+    const editor = document.getElementById('code-editor');
+    if (editor) {
+        editor.style.fontFamily = 'monospace';
+        editor.style.tabSize = '4';
+    }
+</script>
+{% endblock %}

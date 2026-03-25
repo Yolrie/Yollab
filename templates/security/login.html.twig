@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+{% block title %}Connexion — Yollab{% endblock %}
+
+{% block body %}
+<div class="auth-card">
+    <h1>Connexion</h1>
+
+    {% if error %}
+        <div class="flash flash-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+
+    <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="_username" value="{{ last_username }}" autocomplete="email" autofocus>
+        </div>
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="_password" autocomplete="current-password">
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" id="remember_me" name="_remember_me">
+            <label for="remember_me">Se souvenir de moi</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Se connecter</button>
+    </form>
+
+    <p class="auth-footer">Pas encore de compte ? <a href="{{ path('app_register') }}">S'inscrire</a></p>
+</div>
+{% endblock %}

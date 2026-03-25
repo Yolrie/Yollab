@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Form;
+
+use App\Entity\LineComment;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class LineCommentType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('lineNumber', HiddenType::class)
+            ->add('content', TextareaType::class, [
+                'label' => false,
+                'attr'  => ['rows' => 3, 'placeholder' => 'Commentaire sur cette ligne…'],
+            ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults(['data_class' => LineComment::class]);
+    }
+}
