@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+{% block title %}Snippets — Yollab{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <h1>Explorer les snippets</h1>
+    {% if is_granted('ROLE_USER') %}
+        <a href="{{ path('app_snippet_new') }}" class="btn btn-primary">+ Soumettre un snippet</a>
+    {% endif %}
+</div>
+
+{# Filtres #}
+<form method="get" class="filters">
+    <select name="language" onchange="this.form.submit()">
+        <option value="">Tous les langages</option>
+        {% for label, value in languages %}
+            <option value="{{ value }}" {% if language == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    {% if tag %}
+        <span class="tag-filter-active">
+            Tag : <strong>{{ tag }}</strong>
+            <a href="{{ path('app_snippet_list', {language: language}) }}">✕</a>
+        </span>
+    {% endif %}
+</form>
+
+{% if snippets is empty %}
+    <div class="empty-state">
+        <p>Aucun snippet pour l'instant. Sois le premier à en soumettre un !</p>
+    </div>
+{% else %}
+    <div class="snippet-grid">
+        {% for snippet in snippets %}
+            <div class="snippet-card">
+                <div class="snippet-card-header">
+                    <span class="lang-badge lang-{{ snippet.language }}">{{ snippet.language }}</span>
+                    <span class="status-badge status-{{ snippet.status }}">
+                        {% if snippet.status == 'pending' %}⏳ En attente{% else %}✅ Reviewé{% endif %}
+                    </span>
+                </div>
+                <h2 class="snippet-title">
+                    <a href="{{ path('app_snippet_show', {id: snippet.id}) }}">{{ snippet.title }}</a>
+                </h2>
+                <div class="snippet-meta">
+                    par <a href="{{ path('app_profile_show', {username: snippet.author.username}) }}">{{ snippet.author.username }}</a>
+                    · {{ snippet.createdAt|date('d/m/Y') }}
+                    · {{ snippet.reviews|length }} review(s)
+                </div>
+                <div class="snippet-tags">
+                    {% for tag_item in snippet.tags %}
+                        <a href="{{ path('app_snippet_list', {tag: tag_item.name}) }}" class="tag">{{ tag_item.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

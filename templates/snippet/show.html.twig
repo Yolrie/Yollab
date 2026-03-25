@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ snippet.title }} — Yollab{% endblock %}
+
+{% block body %}
+<div class="snippet-show">
+
+    <div class="snippet-show-header">
+        <div>
+            <span class="lang-badge lang-{{ snippet.language }}">{{ snippet.language }}</span>
+            <span class="status-badge status-{{ snippet.status }}">
+                {% if snippet.status == 'pending' %}⏳ En attente de review{% else %}✅ Reviewé{% endif %}
+            </span>
+        </div>
+        <h1>{{ snippet.title }}</h1>
+        <div class="snippet-meta">
+            par <a href="{{ path('app_profile_show', {username: snippet.author.username}) }}">
+                {{ snippet.author.username }}
+            </a>
+            · {{ snippet.createdAt|date('d/m/Y à H:i') }}
+        </div>
+        <div class="snippet-tags">
+            {% for tag_item in snippet.tags %}
+                <a href="{{ path('app_snippet_list', {tag: tag_item.name}) }}" class="tag">{{ tag_item.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# ── Code avec numéros de ligne ── #}
+    <div class="code-wrapper">
+        <table class="code-table">
+            {% set lines = snippet.code|split('\n') %}
+            {% for i, line in lines %}
+                {% set lineNum = i + 1 %}
+                <tr id="line-{{ lineNum }}" class="code-line {% if lineCommentsByLine[lineNum] is defined %}has-comments{% endif %}">
+                    <td class="line-number">
+                        <a href="#line-{{ lineNum }}" data-line="{{ lineNum }}" class="line-anchor">{{ lineNum }}</a>
+                    </td>
+                    <td class="line-code"><pre>{{ line }}</pre></td>
+                    <td class="line-comment-indicator">
+                        {% if lineCommentsByLine[lineNum] is defined %}
+                            💬 {{ lineCommentsByLine[lineNum]|length }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if lineCommentsByLine[lineNum] is defined %}
+                    <tr class="inline-comments-row">
+                        <td colspan="3">
+                            <div class="inline-comments">
+                                {% for lc in lineCommentsByLine[lineNum] %}
+                                    <div class="inline-comment">
+                                        <strong>{{ lc.author.username }}</strong>
+                                        <span class="comment-date">{{ lc.createdAt|date('d/m/Y') }}</span>
+                                        <p>{{ lc.content }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+
+    {# ── Formulaire commentaire inline ── #}
+    {% if lineCommentForm %}
+    <div class="section-card" id="line-comment-form" style="display:none">
+        <h3>Commenter la ligne <span id="target-line-label">?</span></h3>
+        {{ form_start(lineCommentForm) }}
+            {{ form_widget(lineCommentForm.lineNumber) }}
+            {{ form_widget(lineCommentForm.content) }}
+            <button type="submit" class="btn btn-secondary">Ajouter le commentaire</button>
+        {{ form_end(lineCommentForm) }}
+    </div>
+    <script>
+        document.querySelectorAll('.line-anchor').forEach(a => {
+            a.addEventListener('click', e => {
+                const lineNum = a.dataset.line;
+                document.getElementById('line-comment-form').style.display = 'block';
+                document.getElementById('target-line-label').textContent = lineNum;
+                document.querySelector('[name="line_comment[lineNumber]"]').value = lineNum;
+                document.getElementById('line-comment-form').scrollIntoView({behavior: 'smooth'});
+            });
+        });
+    </script>
+    {% endif %}
+
+    {# ── Reviews ── #}
+    <div class="section-card">
+        <h2>Reviews ({{ snippet.reviews|length }})</h2>
+        {% if snippet.reviews is empty %}
+            <p class="muted">Aucune review pour l'instant. Sois le premier !</p>
+        {% else %}
+            {% for review in snippet.reviews %}
+                <div class="review review-{{ review.status }}">
+                    <div class="review-header">
+                        <strong>{{ review.reviewer.username }}</strong>
+                        <span class="verdict verdict-{{ review.status }}">
+                            {% if review.status == 'approved' %}✅ Approuvé{% else %}🔧 À retravailler{% endif %}
+                        </span>
+                        <span class="muted">{{ review.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                    <p>{{ review.comment }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {# ── Formulaire de review ── #}
+    {% if reviewForm %}
+    <div class="section-card">
+        <h2>Laisser une review</h2>
+        {{ form_start(reviewForm) }}
+            {{ form_row(reviewForm.status) }}
+            {{ form_row(reviewForm.comment) }}
+            <button type="submit" class="btn btn-primary">Soumettre la review</button>
+        {{ form_end(reviewForm) }}
+    </div>
+    {% elseif app.user and snippet.author == app.user %}
+        <div class="section-card muted"><em>Tu ne peux pas reviewer ton propre snippet.</em></div>
+    {% elseif not app.user %}
+        <div class="section-card"><a href="{{ path('app_login') }}">Connecte-toi</a> pour laisser une review.</div>
+    {% endif %}
+
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+    document.querySelectorAll('pre').forEach(block => {
+        hljs.highlightElement(block);
+    });
+</script>
+{% endblock %}

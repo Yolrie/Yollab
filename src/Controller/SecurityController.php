@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\User;
+use App\Form\RegistrationFormType;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+
+class SecurityController extends AbstractController
+{
+    #[Route('/register', name: 'app_register')]
+    public function register(
+        Request $request,
+        UserPasswordHasherInterface $hasher,
+        EntityManagerInterface $em
+    ): Response {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_snippet_list');
+        }
+
+        $user = new User();
+        $form = $this->createForm(RegistrationFormType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user->setPassword($hasher->hashPassword($user, $form->get('plainPassword')->getData()));
+            $em->persist($user);
+            $em->flush();
+            $this->addFlash('success', 'Compte créé ! Connecte-toi.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('security/register.html.twig', ['form' => $form]);
+    }
+
+    #[Route('/login', name: 'app_login')]
+    public function login(AuthenticationUtils $utils): Response
+    {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_snippet_list');
+        }
+
+        return $this->render('security/login.html.twig', [
+            'last_username' => $utils->getLastUsername(),
+            'error'         => $utils->getLastAuthenticationError(),
+        ]);
+    }
+
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(): never
+    {
+        throw new \LogicException('This method is intercepted by the firewall.');
+    }
+}
